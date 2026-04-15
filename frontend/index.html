@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClassicModels Analytics Pro</title>
+  <meta name="description" content="Hệ thống phân tích dữ liệu ClassicModels — thống kê, báo cáo, tìm kiếm, pivot, chatbot AI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══════════════════════════════════════════════════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">🚗</div>
+    <div>
+      <div class="brand-name">ClassicModels</div>
+      <div class="brand-sub">Analytics Pro</div>
+    </div>
+  </div>
+
+  <div class="nav-section-label">TỔNG QUAN</div>
+  <ul class="nav-list">
+    <li class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+    </li>
+    <li class="nav-item" data-page="reports">
+      <span class="nav-icon">📋</span><span class="nav-label">Báo Cáo</span>
+      <span class="nav-badge new">MỚI</span>
+    </li>
+  </ul>
+
+  <div class="nav-section-label">PHÂN TÍCH</div>
+  <ul class="nav-list">
+    <li class="nav-item" data-page="charts">
+      <span class="nav-icon">📈</span><span class="nav-label">Biểu Đồ</span>
+    </li>
+    <li class="nav-item" data-page="pivot">
+      <span class="nav-icon">🔄</span><span class="nav-label">Pivot Table</span>
+    </li>
+    <li class="nav-item" data-page="rfm">
+      <span class="nav-icon">🎯</span><span class="nav-label">Phân Tích RFM</span>
+      <span class="nav-badge new">MỚI</span>
+    </li>
+  </ul>
+
+  <div class="nav-section-label">TÌM KIẾM</div>
+  <ul class="nav-list">
+    <li class="nav-item" data-page="search">
+      <span class="nav-icon">🔍</span><span class="nav-label">Tìm Kiếm</span>
+    </li>
+    <li class="nav-item" data-page="employees">
+      <span class="nav-icon">👔</span><span class="nav-label">Nhân Viên</span>
+    </li>
+  </ul>
+
+  <div class="nav-section-label">CẢNH BÁO</div>
+  <ul class="nav-list">
+    <li class="nav-item" data-page="alerts">
+      <span class="nav-icon">🚨</span><span class="nav-label">Cảnh Báo</span>
+      <span class="nav-badge" id="nav-alert-badge" style="background:var(--red);display:none">0</span>
+    </li>
+  </ul>
+
+  <div class="nav-section-label">AI</div>
+  <ul class="nav-list">
+    <li class="nav-item" data-page="chatbot">
+      <span class="nav-icon">🤖</span><span class="nav-label">Chatbot AI</span>
+      <span class="nav-badge">AI</span>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <div class="db-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Đang kết nối...</span>
+    </div>
+    <div class="theme-toggle" onclick="App.toggleTheme()" title="Đổi giao diện">
+      <span id="theme-icon">🌙</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ════════════════════════════════════════════════════════════════ -->
+<main class="main-content" id="main-content">
+
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+    <div class="topbar-title">
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <span class="page-breadcrumb" id="page-breadcrumb">Tổng quan kinh doanh</span>
+    </div>
+    <div class="topbar-right">
+      <select class="year-select" id="global-year-select">
+        <option value="">Tất cả năm</option>
+      </select>
+      <button class="btn-icon" onclick="App.refreshAll()" title="Làm mới dữ liệu">🔄</button>
+      <div class="current-time" id="current-time"></div>
+    </div>
+  </header>
+
+  <!-- ════ DASHBOARD ════════════════════════════════════════════════════ -->
+  <section class="page active" id="page-dashboard">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-revenue">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap">💰</div>
+          <div class="kpi-mom" id="mom-revenue"></div>
+        </div>
+        <div class="kpi-value" id="kv-revenue">—</div>
+        <div class="kpi-label">Tổng Doanh Thu</div>
+        <div class="kpi-sparkline"><canvas id="sp-revenue" height="40"></canvas></div>
+      </div>
+      <div class="kpi-card kpi-orders">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap">📦</div>
+          <div class="kpi-mom" id="mom-orders"></div>
+        </div>
+        <div class="kpi-value" id="kv-orders">—</div>
+        <div class="kpi-label">Số Đơn Hàng</div>
+        <div class="kpi-sparkline"><canvas id="sp-orders" height="40"></canvas></div>
+      </div>
+      <div class="kpi-card kpi-customers">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap">👥</div>
+          <div class="kpi-mom" id="mom-customers"></div>
+        </div>
+        <div class="kpi-value" id="kv-customers">—</div>
+        <div class="kpi-label">Khách Hàng</div>
+        <div class="kpi-sparkline"><canvas id="sp-customers" height="40"></canvas></div>
+      </div>
+      <div class="kpi-card kpi-products">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap">🏎️</div>
+          <div class="kpi-mom" id="mom-products"></div>
+        </div>
+        <div class="kpi-value" id="kv-products">—</div>
+        <div class="kpi-label">Sản Phẩm</div>
+        <div class="kpi-sparkline"><canvas id="sp-products" height="40"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Main Charts Row -->
+    <div class="charts-row-main">
+      <div class="chart-card flex-2">
+        <div class="card-header">
+          <h2>📈 Doanh Thu Theo Thời Gian</h2>
+          <div class="card-actions">
+            <button class="btn-tab active" onclick="App.switchRevenueMode('revenue',this)">Doanh Thu</button>
+            <button class="btn-tab" onclick="App.switchRevenueMode('orders',this)">Đơn Hàng</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chart-revenue-month"></canvas></div>
+      </div>
+      <div class="chart-card flex-1">
+        <div class="card-header"><h2>🏎️ Theo Dòng Sản Phẩm</h2></div>
+        <div class="chart-wrap"><canvas id="chart-productline"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Secondary Row -->
+    <div class="dash-secondary-row">
+
+      <!-- Top Products -->
+      <div class="table-card">
+        <div class="card-header">
+          <h2>🏆 Top Sản Phẩm</h2>
+          <button class="btn-sm" onclick="App.exportTable('tbl-top-products','top-products')">⬇ CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="tbl-top-products">
+            <thead><tr><th>#</th><th>Sản Phẩm</th><th>Dòng</th><th>Doanh Thu</th><th>SL</th><th>L.Nhuận/SP</th></tr></thead>
+            <tbody id="tbody-top-products"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Customers -->
+      <div class="table-card">
+        <div class="card-header">
+          <h2>👥 Top Khách Hàng</h2>
+          <button class="btn-sm" onclick="App.exportTable('tbl-top-customers','top-customers')">⬇ CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="tbl-top-customers">
+            <thead><tr><th>#</th><th>Khách Hàng</th><th>Quốc Gia</th><th>Doanh Thu</th><th>Đã TT</th><th>Đơn</th></tr></thead>
+            <tbody id="tbody-top-customers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Low Stock Alert -->
+      <div class="alert-card" id="low-stock-card">
+        <div class="card-header">
+          <h2>⚠️ Cảnh Báo Tồn Kho Thấp</h2>
+          <span class="badge-count" id="low-stock-count">0</span>
+        </div>
+        <div class="alert-list" id="low-stock-list"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════ REPORTS ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-reports">
+    <div class="reports-toolbar">
+      <div class="form-group inline">
+        <label>Năm báo cáo</label>
+        <select id="report-year"><option value="">Tất cả</option></select>
+      </div>
+      <button class="btn-primary" onclick="Reports.load()">🔄 Tải Báo Cáo</button>
+      <button class="btn-secondary" onclick="Reports.exportCSV()">⬇ Xuất CSV</button>
+      <button class="btn-secondary" onclick="Reports.exportPDF()">🖨 In PDF</button>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="report-summary" id="report-summary"></div>
+
+    <!-- Monthly report table -->
+    <div class="table-card" id="report-table-card" style="margin-top:16px">
+      <div class="card-header"><h2>📋 Báo Cáo Theo Tháng</h2></div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-monthly">
+          <thead>
+            <tr>
+              <th>Tháng</th><th>Doanh Thu</th><th>Chi Phí</th>
+              <th>Lợi Nhuận</th><th>Biên LN%</th><th>Tăng Trưởng</th>
+              <th>Đơn Hàng</th><th>Khách Hàng</th><th>SL</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-monthly"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quarterly chart -->
+    <div class="chart-card full-width" style="margin-top:16px">
+      <div class="card-header"><h2>📊 Doanh Thu Theo Quý</h2></div>
+      <div class="chart-wrap"><canvas id="chart-quarterly"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ════ CHARTS ═══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-charts">
+    <div class="charts-grid-2">
+      <div class="chart-card full-width">
+        <div class="card-header">
+          <h2>📊 Doanh Thu Theo Năm</h2>
+          <button class="btn-sm" onclick="Charts.downloadChart('chart-revenue-year')">⬇ PNG</button>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chart-revenue-year"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><h2>🔵 Trạng Thái Đơn Hàng</h2></div>
+        <div class="chart-wrap"><canvas id="chart-order-status"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><h2>🏢 Doanh Thu Theo Văn Phòng</h2></div>
+        <div class="chart-wrap"><canvas id="chart-office"></canvas></div>
+      </div>
+      <div class="chart-card full-width">
+        <div class="card-header">
+          <h2>🏎️ Top 10 Sản Phẩm Bán Chạy</h2>
+          <button class="btn-sm" onclick="Charts.downloadChart('chart-top-products-bar')">⬇ PNG</button>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chart-top-products-bar"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ PIVOT ════════════════════════════════════════════════════════ -->
+  <section class="page" id="page-pivot">
+    <div class="pivot-controls card-card">
+      <h2 class="section-title">⚙️ Cấu Hình Pivot Table</h2>
+      <div class="pivot-form">
+        <div class="form-group">
+          <label>Hàng (Row)</label>
+          <select id="pivot-row">
+            <option value="productLine">Dòng Sản Phẩm</option>
+            <option value="country">Quốc Gia</option>
+            <option value="office">Văn Phòng</option>
+            <option value="employee">Nhân Viên</option>
+            <option value="status">Trạng Thái</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cột (Column)</label>
+          <select id="pivot-col">
+            <option value="year">Năm</option>
+            <option value="quarter">Quý</option>
+            <option value="month">Tháng</option>
+            <option value="productLine">Dòng SP</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Giá Trị</label>
+          <select id="pivot-val">
+            <option value="revenue">Doanh Thu ($)</option>
+            <option value="orders">Số Đơn</option>
+            <option value="qty">Số Lượng</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Lọc Năm</label>
+          <select id="pivot-year"><option value="">Tất cả</option></select>
+        </div>
+        <div class="pivot-actions">
+          <button class="btn-primary" onclick="Pivot.load()">🔄 Tải Dữ Liệu</button>
+          <button class="btn-secondary" onclick="Pivot.exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+    </div>
+    <div class="pivot-wrap">
+      <div class="pivot-loading" id="pivot-loading"><div class="spinner"></div><p>Đang tải...</p></div>
+      <div class="table-wrap" id="pivot-table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- ════ RFM ══════════════════════════════════════════════════════════ -->
+  <section class="page" id="page-rfm">
+    <div class="rfm-intro card-card">
+      <h2 class="section-title">🎯 Phân Tích RFM (Recency · Frequency · Monetary)</h2>
+      <p class="muted">Phân nhóm khách hàng theo 3 chiều: <strong>Thời gian mua gần nhất</strong>, <strong>Tần suất mua</strong>, và <strong>Giá trị mua hàng</strong>.</p>
+    </div>
+    <div class="rfm-grid">
+      <div class="chart-card">
+        <div class="card-header"><h2>💰 Top 10 Monetary</h2></div>
+        <div class="chart-wrap"><canvas id="chart-rfm-monetary"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><h2>🔁 Top 10 Frequency</h2></div>
+        <div class="chart-wrap"><canvas id="chart-rfm-freq"></canvas></div>
+      </div>
+    </div>
+    <div class="table-card" style="margin-top:16px">
+      <div class="card-header">
+        <h2>📋 Bảng RFM Khách Hàng</h2>
+        <button class="btn-sm" onclick="App.exportTable('tbl-rfm','rfm')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-rfm">
+          <thead><tr><th>#</th><th>Khách Hàng</th><th>Quốc Gia</th><th>Recency (ngày)</th><th>Frequency</th><th>Monetary ($)</th><th>Phân Nhóm</th></tr></thead>
+          <tbody id="tbody-rfm"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ SEARCH ═══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-search">
+    <div class="search-tabs">
+      <button class="search-tab active" onclick="Search.switchTab('orders',this)">📦 Đơn Hàng</button>
+      <button class="search-tab" onclick="Search.switchTab('customers',this)">👥 Khách Hàng</button>
+      <button class="search-tab" onclick="Search.switchTab('products',this)">🏎️ Sản Phẩm</button>
+    </div>
+
+    <div class="search-panel active" id="panel-orders">
+      <div class="filter-grid">
+        <div class="form-group"><label>Từ Ngày</label><input type="text" id="ord-date-from" class="datepicker" placeholder="YYYY-MM-DD" /></div>
+        <div class="form-group"><label>Đến Ngày</label><input type="text" id="ord-date-to" class="datepicker" placeholder="YYYY-MM-DD" /></div>
+        <div class="form-group"><label>Tên Khách Hàng</label><input type="text" id="ord-customer" placeholder="Tìm..." /></div>
+        <div class="form-group"><label>Quốc Gia</label><select id="ord-country"><option value="">Tất cả</option></select></div>
+        <div class="form-group"><label>Sản Phẩm</label><input type="text" id="ord-product" placeholder="Tìm..." /></div>
+        <div class="form-group"><label>Dòng SP</label><select id="ord-productline"><option value="">Tất cả</option></select></div>
+        <div class="form-group"><label>Trạng Thái</label>
+          <select id="ord-status">
+            <option value="">Tất cả</option>
+            <option>Shipped</option><option>Resolved</option>
+            <option>Cancelled</option><option>On Hold</option>
+            <option>Disputed</option><option>In Process</option>
+          </select>
+        </div>
+        <div class="form-group form-group-action">
+          <button class="btn-primary full" onclick="Search.searchOrders()">🔍 Tìm Kiếm</button>
+          <button class="btn-secondary full" onclick="Search.clearOrders()">✖ Xóa Lọc</button>
+        </div>
+      </div>
+      <div class="result-info" id="ord-result-info"></div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-orders">
+          <thead><tr><th>Số ĐH</th><th>Ngày ĐH</th><th>Khách Hàng</th><th>Quốc Gia</th><th>Doanh Thu</th><th>Trạng Thái</th><th>Ngày Giao</th></tr></thead>
+          <tbody id="tbody-orders"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="ord-pagination"></div>
+    </div>
+
+    <div class="search-panel" id="panel-customers">
+      <div class="filter-grid">
+        <div class="form-group"><label>Tìm Kiếm</label><input type="text" id="cust-q" placeholder="Tên hoặc liên hệ..." /></div>
+        <div class="form-group"><label>Quốc Gia</label><select id="cust-country"><option value="">Tất cả</option></select></div>
+        <div class="form-group form-group-action">
+          <button class="btn-primary full" onclick="Search.searchCustomers()">🔍 Tìm Kiếm</button>
+          <button class="btn-secondary full" onclick="Search.clearCustomers()">✖ Xóa</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-customers">
+          <thead><tr><th>#</th><th>Khách Hàng</th><th>Liên Hệ</th><th>Quốc Gia</th><th>Hạn Mức</th><th>Doanh Thu</th><th>Đơn</th></tr></thead>
+          <tbody id="tbody-customers"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="search-panel" id="panel-products">
+      <div class="filter-grid">
+        <div class="form-group"><label>Tìm Kiếm</label><input type="text" id="prod-q" placeholder="Tên sản phẩm..." /></div>
+        <div class="form-group"><label>Dòng SP</label><select id="prod-line"><option value="">Tất cả</option></select></div>
+        <div class="form-group form-group-action">
+          <button class="btn-primary full" onclick="Search.searchProducts()">🔍 Tìm Kiếm</button>
+          <button class="btn-secondary full" onclick="Search.clearProducts()">✖ Xóa</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-products">
+          <thead><tr><th>Mã</th><th>Tên Sản Phẩm</th><th>Dòng</th><th>Giá Mua</th><th>MSRP</th><th>Tồn Kho</th><th>Đã Bán</th><th>Doanh Thu</th></tr></thead>
+          <tbody id="tbody-products"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ EMPLOYEES ════════════════════════════════════════════════════ -->
+  <section class="page" id="page-employees">
+    <div class="chart-card full-width" style="margin-bottom:16px">
+      <div class="card-header"><h2>🏆 Bảng Xếp Hạng Nhân Viên</h2></div>
+      <div class="chart-wrap tall"><canvas id="chart-employees"></canvas></div>
+    </div>
+    <div class="table-card">
+      <div class="card-header">
+        <h2>👔 Chi Tiết Hiệu Suất Sales</h2>
+        <button class="btn-sm" onclick="App.exportTable('tbl-employees','employees')">⬇ CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tbl-employees">
+          <thead><tr><th>#</th><th>Nhân Viên</th><th>Văn Phòng</th><th>Khách Hàng</th><th>Đơn Hàng</th><th>Doanh Thu</th><th>Hiệu Suất</th></tr></thead>
+          <tbody id="tbody-employees"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ ALERTS ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-alerts">
+
+    <!-- Alert Summary Bar -->
+    <div class="alert-summary-bar" id="alert-summary-bar"></div>
+
+    <!-- PRODUCT ALERTS -->
+    <div class="alerts-section-header">
+      <span class="alerts-section-icon">📦</span>
+      <h2>Cảnh Báo Sản Phẩm</h2>
+      <span class="alerts-section-count" id="product-alert-count">0 cảnh báo</span>
+    </div>
+
+    <div class="alerts-grid">
+
+      <!-- Critical Stock -->
+      <div class="alert-panel alert-danger">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">🔴</span>
+          <div>
+            <div class="alert-panel-title">Tồn Kho Cạn Kiệt</div>
+            <div class="alert-panel-desc">Sản phẩm có tồn kho &lt; 500 — cần nhập hàng ngay</div>
+          </div>
+          <span class="alert-panel-count" id="cnt-critical-stock">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-critical-stock">
+            <thead><tr><th>Sản Phẩm</th><th>Dòng</th><th>Tồn Kho</th><th>Giá Mua</th><th>MSRP</th><th>Đã Bán</th></tr></thead>
+            <tbody id="tbody-critical-stock"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Low Stock -->
+      <div class="alert-panel alert-warning">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">🟡</span>
+          <div>
+            <div class="alert-panel-title">Tồn Kho Thấp</div>
+            <div class="alert-panel-desc">Sản phẩm có tồn kho 500–1500 — sắp hết</div>
+          </div>
+          <span class="alert-panel-count warning" id="cnt-low-stock">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-low-stock-alert">
+            <thead><tr><th>Sản Phẩm</th><th>Dòng</th><th>Tồn Kho</th><th>MSRP</th><th>Đã Bán</th></tr></thead>
+            <tbody id="tbody-low-stock-alert"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- No Recent Sales -->
+      <div class="alert-panel alert-info">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">💤</span>
+          <div>
+            <div class="alert-panel-title">Không Có Đơn Hàng (&gt;90 ngày)</div>
+            <div class="alert-panel-desc">Sản phẩm không bán được gần đây</div>
+          </div>
+          <span class="alert-panel-count info" id="cnt-no-recent">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-no-recent">
+            <thead><tr><th>Sản Phẩm</th><th>Dòng</th><th>Tồn Kho</th><th>Ngày Bán Cuối</th><th>Ngày Trôi Qua</th></tr></thead>
+            <tbody id="tbody-no-recent"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Low Margin -->
+      <div class="alert-panel alert-info">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">📉</span>
+          <div>
+            <div class="alert-panel-title">Biên Lợi Nhuận Thấp (&lt;20%)</div>
+            <div class="alert-panel-desc">Sản phẩm cần xem xét chiến lược giá</div>
+          </div>
+          <span class="alert-panel-count info" id="cnt-low-margin">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-low-margin">
+            <thead><tr><th>Sản Phẩm</th><th>Dòng</th><th>Giá Mua</th><th>Giá Bán TB</th><th>Biên LN%</th><th>SL Bán</th></tr></thead>
+            <tbody id="tbody-low-margin"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /alerts-grid -->
+
+    <!-- CUSTOMER ALERTS -->
+    <div class="alerts-section-header" style="margin-top:32px">
+      <span class="alerts-section-icon">👥</span>
+      <h2>Cảnh Báo Khách Hàng</h2>
+      <span class="alerts-section-count" id="customer-alert-count">0 cảnh báo</span>
+    </div>
+
+    <div class="alerts-grid">
+
+      <!-- Overdue Payment -->
+      <div class="alert-panel alert-danger">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">💸</span>
+          <div>
+            <div class="alert-panel-title">Nợ Chưa Thanh Toán Cao</div>
+            <div class="alert-panel-desc">Khách hàng còn nợ &gt; $10,000</div>
+          </div>
+          <span class="alert-panel-count" id="cnt-overdue">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-overdue">
+            <thead><tr><th>Khách Hàng</th><th>Quốc Gia</th><th>Doanh Thu</th><th>Đã TT</th><th>Còn Nợ</th><th>Hạn Mức</th></tr></thead>
+            <tbody id="tbody-overdue"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Inactive Customers -->
+      <div class="alert-panel alert-warning">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">😴</span>
+          <div>
+            <div class="alert-panel-title">Khách Hàng Không Hoạt Động</div>
+            <div class="alert-panel-desc">Không có đơn hàng trong &gt;365 ngày</div>
+          </div>
+          <span class="alert-panel-count warning" id="cnt-inactive">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-inactive">
+            <thead><tr><th>Khách Hàng</th><th>Quốc Gia</th><th>Ngày Mua Cuối</th><th>Ngày Không HĐ</th><th>Tổng Đơn</th><th>Doanh Thu</th></tr></thead>
+            <tbody id="tbody-inactive"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Near Credit Limit -->
+      <div class="alert-panel alert-warning">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">⚡</span>
+          <div>
+            <div class="alert-panel-title">Gần Đạt Hạn Mức Tín Dụng</div>
+            <div class="alert-panel-desc">Đã sử dụng &gt;80% hạn mức tín dụng</div>
+          </div>
+          <span class="alert-panel-count warning" id="cnt-credit">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-credit">
+            <thead><tr><th>Khách Hàng</th><th>Quốc Gia</th><th>Hạn Mức</th><th>Còn Nợ</th><th>% Đã Dùng</th></tr></thead>
+            <tbody id="tbody-credit"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Disputed Orders -->
+      <div class="alert-panel alert-danger">
+        <div class="alert-panel-header">
+          <span class="alert-panel-icon">⚠️</span>
+          <div>
+            <div class="alert-panel-title">Đơn Hàng Tranh Chấp / Chờ Xử Lý</div>
+            <div class="alert-panel-desc">Cần xử lý ngay: Disputed, On Hold, In Process</div>
+          </div>
+          <span class="alert-panel-count" id="cnt-disputed">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table alert-table" id="tbl-disputed">
+            <thead><tr><th>Số ĐH</th><th>Khách Hàng</th><th>Quốc Gia</th><th>Trạng Thái</th><th>Giá Trị</th><th>Ngày Đặt</th><th>Đã Qua (ngày)</th></tr></thead>
+            <tbody id="tbody-disputed"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /alerts-grid customer -->
+  </section>
+
+  <!-- ════ CHATBOT ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-chatbot">
+    <div class="chatbot-container">
+      <div class="chat-header">
+        <div class="chat-avatar-wrap"><div class="chat-avatar-pulse"></div>🤖</div>
+        <div class="chat-header-info">
+          <div class="chat-name">ClassicBot AI</div>
+          <div class="chat-desc">Trợ lý phân tích dữ liệu thông minh — hỏi bằng tiếng Việt hoặc English</div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="btn-secondary small" onclick="Chatbot.clear()">🗑 Xóa</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="sql-viewer" id="sql-viewer" style="display:none">
+        <div class="sql-header"><span>📋 SQL Query</span><button onclick="document.getElementById('sql-viewer').style.display='none'">✕</button></div>
+        <pre id="sql-content"></pre>
+      </div>
+      <div class="quick-questions" id="quick-questions">
+        <span class="quick-label">Gợi ý:</span>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Doanh thu năm 2004?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Top 5 khách hàng?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Sản phẩm bán chạy nhất?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Số đơn tháng 11 năm 2003?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Tồn kho thấp nhất?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Nhân viên doanh thu cao nhất?</button>
+        <button class="quick-btn" onclick="Chatbot.quickAsk(this)">Thanh toán năm 2004?</button>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input"
+          placeholder="Nhập câu hỏi... (VD: Doanh thu quý 2 năm 2004?)"
+          autocomplete="off" onkeydown="if(event.key==='Enter') Chatbot.send()" />
+        <button class="btn-primary send-btn" id="btn-send" onclick="Chatbot.send()">➤</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div></div>
+
+<script src="/js/app.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/pivot.js"></script>
+<script src="/js/search.js"></script>
+<script src="/js/reports.js"></script>
+<script src="/js/alerts.js"></script>
+<script src="/js/chatbot.js"></script>
+</body>
+</html>
